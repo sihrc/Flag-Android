@@ -1,28 +1,29 @@
 package me.sihrc.flag;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.facebook.Profile;
+import me.sihrc.flag.fragments.SplashFragment;
 
 
-public class MainActivity extends FacebookAuth {
+public class MainActivity extends FragmentActivity {
+    FragmentManager fragmentManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        fragmentManager = getSupportFragmentManager();
+
+        showFragment(SplashFragment.newInstance());
     }
 
-    @Override
-    public void loggedIn(Profile profile) {
-
-    }
-
-    @Override
-    public void loggedOut() {
-
+    public void showFragment(Fragment fragment) {
+        fragmentManager.beginTransaction().replace(R.id.container, fragment).commit();
     }
 
     @Override
