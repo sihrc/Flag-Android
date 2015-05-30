@@ -16,8 +16,10 @@ public abstract class Parser<T> {
     JSONObject object;
 
     String getString(String key) throws JSONException {
-        if (object.has(key))
-            return object.getString(key);
+        if (object.has(key)) {
+            String value = object.getString(key);
+            return !value.equals("null") ? value : null;
+        }
         if (DEBUG)
             Log.e("Parser", "Missing Key: " + key);
         return null;

@@ -139,9 +139,7 @@ public class FlagServer {
     }
 
     public void requestUser(final String phone, final NetworkCallback<User> callback) {
-        makeRequest(Request.Method.POST, API.POST_REQ_USER, new HashMap<String, String>() {{
-            put("phone", phone);
-        }}, new Response.Listener<JSONObject>() {
+        makeRequest(Request.Method.GET, API.POST_REQ_USER(phone), null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {

@@ -26,9 +26,11 @@ public class AnimationHelper {
     public AnimationHelper(Context context) {
         this.context = context;
     }
-
     public static void linearAnimation(final View view, final int deltaX, final int deltaY, long duration, final Runnable callback) {
-        Animation anim = new TranslateAnimation(0, deltaX, 0, deltaY);
+        linearAnimation(view, 0, 0, deltaX, deltaY, duration, callback);
+    }
+    public static void linearAnimation(final View view, final int startX, final int startY, final int endX, final int endY, long duration, final Runnable callback) {
+        Animation anim = new TranslateAnimation(startX, endX, startY, endY);
         anim.setDuration(duration);
         anim.setInterpolator(new DecelerateInterpolator());
         view.startAnimation(anim);
@@ -40,8 +42,8 @@ public class AnimationHelper {
             @Override
             public void onAnimationEnd(Animation animation) {
                 view.clearAnimation();
-                view.setX(view.getX() + deltaX);
-                view.setY(view.getY() + deltaY);
+                view.setX(view.getX() + endX);
+                view.setY(view.getY() + endY);
 
                 if (callback != null)
                     callback.run();

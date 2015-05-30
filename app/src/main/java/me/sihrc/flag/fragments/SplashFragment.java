@@ -1,9 +1,12 @@
 package me.sihrc.flag.fragments;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.telephony.TelephonyManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,13 +25,15 @@ import me.sihrc.flag.network.NetworkCallback;
  */
 public class SplashFragment extends FlagFragment {
     // Banner
-    View banner;
-    int bannerYorig;
+    TextView banner;
+    View submit;
+    int originalY;
+    final int TOP_MARGIN = 100;
+    final int MINIMUM_NAME_LENGTH = 4;
 
     // Input Name
     String phone;
-    EditText inputName;
-    View displayName;
+    EditText displayName;
 
     // Loading Text
     TextView loadingText;
@@ -54,13 +59,12 @@ public class SplashFragment extends FlagFragment {
                     @Override
                     public void handle(User object) {
                         if (object == null) {
-                            hideLoadingText();
-                            bannerYorig = (int) banner.getY();
+                            showLoadingText(false);
+                            originalY = (int) banner.getY();
                             // Ask for User Information
-                            AnimationHelper.linearAnimation(banner, 0, (int) -banner.getY() + 30, 1000, new Runnable() {
+                            AnimationHelper.linearAnimation(banner, 0, (int) -banner.getY() + TOP_MARGIN, 1000, new Runnable() {
                                 @Override
                                 public void run() {
-                                    AnimationHelper.fadeAnimation(inputName, 0f, 1f, 1000, null);
                                     AnimationHelper.fadeAnimation(displayName, 0f, 1f, 1000, null);
                                 }
                             });
@@ -80,15 +84,24 @@ public class SplashFragment extends FlagFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_splash, container, false);
 
-        banner = rootView.findViewById(R.id.splash_banner);
+        // Setup Text and Font Faces
+        banner = (TextView) rootView.findViewById(R.id.splash_banner);
         loadingText = (TextView) rootView.findViewById(R.id.splash_loading_text);
-        inputName = (EditText) rootView.findViewById(R.id.splash_input_name);
-        displayName = rootView.findViewById(R.id.splash_name_layout);
+        displayName = (EditText) rootView.findViewById(R.id.splash_input_name);
 
-        rootView.findViewById(R.id.splash_submit_name).setOnClickListener(new View.OnClickListener() {
+        Typeface timeBurnerFont = Typeface.createFromAsset(activity.getAssets(), "timeburner_regular.ttf");
+        banner.setTypeface(timeBurnerFont);
+        loadingText.setTypeface(timeBurnerFont);
+        displayName.setTypeface(timeBurnerFont);
+
+
+        submit = rootView.findViewById(R.id.splash_submit_name);
+        submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String name = inputName.getText().toString();
+                String name = displayName.getText().toString();
+                submit.setEnabled(false);
+                showDoneButton(false);
                 FlagServer.getInstance(activity).createUser(name, phone, new NetworkCallback<User>() {
                     @Override
                     public void handle(User object) {
@@ -101,10 +114,10 @@ public class SplashFragment extends FlagFragment {
                 AnimationHelper.fadeAnimation(displayName, 1f, 0f, 200, new Runnable() {
                     @Override
                     public void run() {
-                        AnimationHelper.linearAnimation(banner, 0, bannerYorig - 30, 1000, new Runnable() {
+                        AnimationHelper.linearAnimation(banner, 0, originalY - TOP_MARGIN, 1000, new Runnable() {
                             @Override
                             public void run() {
-                                showLoadingText();
+                                showLoadingText(true);
                             }
                         });
                     }
@@ -112,32 +125,64 @@ public class SplashFragment extends FlagFragment {
             }
         });
 
-        showLoadingText();
+        displayName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                showDoneButton(charSequence.length() > MINIMUM_NAME_LENGTH);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+            }
+        });
+
+        showLoadingText(true);
 
         return rootView;
     }
 
-    private void showLoadingText() {
-        if (loadingText == null)
-            return;
-
-        loadingText.setVisibility(View.VISIBLE);
-        loadingRunnable = new Runnable() {
-            @Override
-            public void run() {
-                loadingText.setText("Loading\n" + new String(new char[dotCount++ % 4]).replace("\0", "o "));
-                loadingText.postDelayed(this, 500);
-            }
-        };
-        loadingText.postDelayed(loadingRunnable, 500);
+    private void showDoneButton(boolean show) {
+        if (show) {
+            AnimationHelper.linearAnimation(submit, 0, 500, 0, 0, 1000, new Runnable() {
+                @Override
+                public void run() {
+                    submit.setVisibility(View.VISIBLE);
+                }
+            });
+        } else {
+            AnimationHelper.linearAnimation(submit, 0, 0, 0, 500, 1000, new Runnable() {
+                @Override
+                public void run() {
+                    submit.setVisibility(View.GONE);
+                }
+            });
+        }
     }
 
-    private void hideLoadingText() {
-        if (loadingRunnable != null)
-            loadingText.removeCallbacks(loadingRunnable);
+    private void showLoadingText(boolean show) {
+        if (loadingText == null)
+            return;
+        if (show) {
+            loadingText.setVisibility(View.VISIBLE);
+            loadingRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    loadingText.setText("Loading\n" + new String(new char[dotCount++ % 4]).replace("\0", " . "));
+                    loadingText.postDelayed(this, 500);
+                }
+            };
+            loadingText.postDelayed(loadingRunnable, 500);
+        } else {
+            if (loadingRunnable != null)
+                loadingText.removeCallbacks(loadingRunnable);
 
-        if (loadingText != null) {
-            loadingText.setVisibility(View.INVISIBLE);
+            if (loadingText != null) {
+                loadingText.setVisibility(View.INVISIBLE);
+            }
         }
     }
 }

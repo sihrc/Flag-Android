@@ -15,8 +15,11 @@ public class UserParser extends Parser<User> {
 
         user.name = getString("name");
         user.phone = getString("phone");
-        user.lat = Float.parseFloat(getString("lat"));
-        user.lon = Float.parseFloat(getString("lon"));
+
+        try {
+            user.lat = Float.parseFloat(getString("lat"));
+            user.lon = Float.parseFloat(getString("lon"));
+        } catch (NumberFormatException | NullPointerException ignored) {}
 
         return user;
     }

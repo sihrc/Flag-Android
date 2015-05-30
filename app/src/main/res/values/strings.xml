@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Flag</string>
+    <string name="app_name">City Watch</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
@@ -11,5 +11,5 @@
     <string name="desc_splash_banner">banner for splash screen</string>
     <string name="splash_display_name">Name</string>
     <string name="splash_done">Done</string>
-    <string name="splash_display_help">What do you want others to see as your name?</string>
+    <string name="splash_display_help">Name For Display?</string>
 </resources>
